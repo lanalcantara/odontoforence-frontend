@@ -36,7 +36,19 @@ export default function CasesPage() {
   useEffect(() => {
     const fetchCases = async () => {
       try {
-        const response = await fetch("https://odontoforense-backend-2.onrender.com/api/caso/")
+        const token = localStorage.getItem("token")
+
+        const response = await fetch("https://odontoforense-backend-1.onrender.com/api/caso/", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        if (!response.ok) {
+          throw new Error("Erro na resposta da API")
+        }
+
         const data = await response.json()
         setCases(data)
       } catch (error) {
@@ -48,7 +60,7 @@ export default function CasesPage() {
 
     fetchCases()
   }, [])
-console.log(cases) 
+
   return (
     <div className="container mx-auto py-10">
       <div className="flex justify-between items-center mb-6">
@@ -80,10 +92,10 @@ console.log(cases)
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="open">Em Andamento</SelectItem>
-                <SelectItem value="pending">Pendente</SelectItem>
-                <SelectItem value="completed">Concluído</SelectItem>
-                <SelectItem value="archived">Arquivado</SelectItem>
+                <SelectItem value="em andamento">Em Andamento</SelectItem>
+                <SelectItem value="pendente">Pendente</SelectItem>
+                <SelectItem value="concluído">Concluído</SelectItem>
+                <SelectItem value="arquivado">Arquivado</SelectItem>
               </SelectContent>
             </Select>
             <Input type="date" />
@@ -105,31 +117,37 @@ console.log(cases)
                 <TableRow>
                   <TableHead>Número</TableHead>
                   <TableHead>Descrição</TableHead>
-                  <TableHead>Data</TableHead>
+                  <TableHead>Data de Abertura</TableHead>
                   <TableHead>Perito Responsável</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Local</TableHead>
+                  <TableHead>Solicitado por</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {cases.map((caseItem) => (
-                  <TableRow key={caseItem.id}>
-                    <TableCell className="font-medium">{caseItem.numero}</TableCell>
+                {cases?.map((caseItem) => (
+                  <TableRow key={caseItem._id}>
+                    <TableCell className="font-medium">{caseItem.numeroDoCaso}</TableCell>
                     <TableCell>{caseItem.descricao}</TableCell>
-                    <TableCell>{caseItem.data}</TableCell>
-                    <TableCell>{caseItem.perito}</TableCell>
+                    <TableCell>
+                      {new Date(caseItem.dataDeAbertura).toLocaleDateString("pt-BR")}
+                    </TableCell>
+                    <TableCell>{caseItem.peritoResponsavel}</TableCell>
                     <TableCell>
                       <StatusBadge status={caseItem.status} />
                     </TableCell>
+                    <TableCell>{caseItem.local}</TableCell>
+                    <TableCell>{caseItem.solicitadoPor}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button variant="ghost" size="icon" asChild>
-                          <Link href={`/cases/${caseItem.id}`}>
+                          <Link href={`/cases/${caseItem._id}`}>
                             <Eye className="h-4 w-4" />
                           </Link>
                         </Button>
                         <Button variant="ghost" size="icon" asChild>
-                          <Link href={`/reports/new?case=${caseItem.id}`}>
+                          <Link href={`/reports/new?case=${caseItem._id}`}>
                             <FileText className="h-4 w-4" />
                           </Link>
                         </Button>
@@ -147,16 +165,26 @@ console.log(cases)
 }
 
 function StatusBadge({ status }: { status: string }) {
+  const statusMap = {
+    "em andamento": "Em Andamento",
+    "pendente": "Pendente",
+    "concluído": "Concluído",
+    "arquivado": "Arquivado",
+    "finalizado": "Concluído", 
+  }
+
+  const label = statusMap[status.toLowerCase()] || status
+
   const statusStyles = {
     "Em Andamento": "bg-blue-100 text-blue-800 hover:bg-blue-100/80",
-    Pendente: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80",
-    Concluído: "bg-green-100 text-green-800 hover:bg-green-100/80",
-    Arquivado: "bg-gray-100 text-gray-800 hover:bg-gray-100/80",
+    "Pendente": "bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80",
+    "Concluído": "bg-green-100 text-green-800 hover:bg-green-100/80",
+    "Arquivado": "bg-gray-100 text-gray-800 hover:bg-gray-100/80",
   }
 
   return (
-    <Badge className={statusStyles[status] || ""} variant="outline">
-      {status}
+    <Badge className={statusStyles[label] || ""} variant="outline">
+      {label}
     </Badge>
   )
 }
