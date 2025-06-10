@@ -20,7 +20,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await fetch("https://odontoforense-backend-2.onrender.com/api/user/login", {
+      const response = await fetch("https://odontoforense-backend-1.onrender.com/api/user/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
