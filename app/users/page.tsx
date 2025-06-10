@@ -59,7 +59,7 @@ export default function UsersPage() {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem("token")
-      const res = await axios.get("https://odontoforense-backend-2.onrender.com/api/user/", {
+      const res = await axios.get("https://odontoforense-backend-1.onrender.com/api/user/", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -93,7 +93,7 @@ export default function UsersPage() {
     try {
       const token = localStorage.getItem("token")
       await axios.post(
-        "https://odontoforense-backend-2.onrender.com/api/usuarios",
+        "https://odontoforense-backend-1.onrender.com/api/usuarios",
         {
           nome: formData.nome,
           email: formData.email,
@@ -129,7 +129,7 @@ export default function UsersPage() {
 
     try {
       const token = localStorage.getItem("token")
-      await axios.delete(`https://odontoforense-backend-2.onrender.com/api/user/${id}`, {
+      await axios.delete(`https://odontoforense-backend-1.onrender.com/api/user/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -158,7 +158,7 @@ export default function UsersPage() {
     try {
       const token = localStorage.getItem("token")
       await axios.put(
-        `https://odontoforense-backend-2.onrender.com/api/user/${editData._id}`,
+        `https://odontoforense-backend-1.onrender.com/api/user/${editData._id}`,
         {
           nome: editData.nome,
           email: editData.email,
