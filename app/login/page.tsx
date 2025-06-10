@@ -8,10 +8,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
-  const [senha, setsenha] = useState("");
+  const [senha, setSenha] = useState("");
+  const [showPassword, setShowPassword] = useState(false); 
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -33,7 +35,6 @@ export default function LoginPage() {
       }
 
       const data = await response.json();
-
       localStorage.setItem("token", data.token);
 
       toast({
@@ -73,6 +74,7 @@ export default function LoginPage() {
               required
             />
           </div>
+          {/* Modificando a estrutura do campo de senha */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="senha">Senha</Label>
@@ -80,13 +82,30 @@ export default function LoginPage() {
                 Esqueceu a senha?
               </Link>
             </div>
-            <Input
-              id="senha"
-              type="senha"
-              value={senha}
-              onChange={(e) => setsenha(e.target.value)}
-              required
-            />
+            {/* div com position relative para posicionar o ícone */}
+            <div className="relative">
+              <Input
+                id="senha"
+                // O tipo agora é dinâmico: 'text' se showPassword for true, senão 'password'
+                type={showPassword ? "text" : "password"}
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+                required
+                className="pr-10" // Adiciona um padding à direita para o ícone não sobrepor o texto
+              />
+              {/* Botão com o ícone que alterna a visibilidade */}
+              <button
+                type="button" // type="button" para não submeter o formulário
+                className="absolute inset-y-0 right-0 flex items-center pr-3"
+                onClick={() => setShowPassword(!showPassword)} 
+              >
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5 text-muted-foreground" />
+                ) : (
+                  <Eye className="h-5 w-5 text-muted-foreground" />
+                )}
+              </button>
+            </div>
           </div>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
