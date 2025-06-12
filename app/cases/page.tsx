@@ -5,8 +5,6 @@ import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Eye, EyeOff, Home, FileText, Search, Award, Database, Users, LogOut, Shield, Microscope } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -25,7 +23,7 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const response = await fetch("https://odontoforense-backend-1.onrender.com/api/auth/login", {
+      const response = await fetch("https://odontoforense-backend-1.onrender.com/api/caso/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -134,23 +132,23 @@ export default function LoginPage() {
           </div>
 
           {/* Login Card */}
-          <Card className="border-2 border-gray-100 shadow-xl">
-            <CardHeader className="space-y-1 pb-6">
-              <CardTitle className="text-2xl font-bold text-center text-black">Login</CardTitle>
-              <CardDescription className="text-center text-gray-600">
+          <div className="border-2 border-gray-100 shadow-xl rounded-xl bg-white p-8">
+            <div className="space-y-1 pb-6">
+              <h2 className="text-2xl font-bold text-center text-black">Login</h2>
+              <p className="text-center text-gray-600">
                 Entre com suas credenciais para acessar o sistema
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
+              </p>
+            </div>
+            <div className="space-y-6">
               <form onSubmit={handleLogin} className="space-y-6">
                 {error && (
                   <div className="bg-red-50 border border-red-200 text-red-800 p-3 rounded-md text-sm">{error}</div>
                 )}
 
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-semibold text-black">
+                  <label htmlFor="email" className="text-sm font-semibold text-black">
                     Email
-                  </Label>
+                  </label>
                   <Input
                     id="email"
                     type="email"
@@ -164,9 +162,9 @@ export default function LoginPage() {
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="password" className="text-sm font-semibold text-black">
+                    <label htmlFor="password" className="text-sm font-semibold text-black">
                       Senha
-                    </Label>
+                    </label>
                     <button
                       type="button"
                       className="text-sm text-gray-600 hover:text-black transition-colors font-medium"
@@ -206,8 +204,8 @@ export default function LoginPage() {
               <div className="text-center pt-4">
                 <p className="text-xs text-gray-500">Sistema seguro e certificado para perícia odontológica</p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Footer */}
           <div className="text-center mt-8 text-xs text-gray-500">
