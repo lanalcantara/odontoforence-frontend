@@ -1,190 +1,221 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import type React from "react"
+
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Eye, FileText, Plus } from "lucide-react"
-import Link from "next/link"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
+import { Eye, EyeOff, Home, FileText, Search, Award, Database, Users, LogOut, Shield, Microscope } from "lucide-react"
+import { useRouter } from "next/navigation"
 
-export default function CasesPage() {
-  const [cases, setCases] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+export default function LoginPage() {
+  const [showPassword, setShowPassword] = useState(false)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+  const router = useRouter()
 
-  useEffect(() => {
-    const fetchCases = async () => {
-      try {
-        const token = localStorage.getItem("token")
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
+    setIsLoading(true)
 
-        const response = await fetch("https://odontoforense-backend-1.onrender.com/api/caso/", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        })
+    try {
+      const response = await fetch("https://odontoforense-backend-1.onrender.com/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      })
 
-        if (!response.ok) {
-          throw new Error("Erro na resposta da API")
-        }
+      const data = await response.json()
 
-        const data = await response.json()
-        setCases(data)
-      } catch (error) {
-        console.error("Erro ao buscar casos:", error)
-      } finally {
-        setLoading(false)
+      if (!response.ok) {
+        throw new Error(data.message || "Erro ao fazer login")
       }
-    }
 
-    fetchCases()
-  }, [])
+      // Salvar o token no localStorage
+      localStorage.setItem("token", data.token)
+
+      // Redirecionar para a página principal
+      router.push("/cases")
+    } catch (error) {
+      console.error("Erro de login:", error)
+      setError(error instanceof Error ? error.message : "Erro ao fazer login")
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Casos Periciais</h1>
-          <p className="text-muted-foreground">
-            Gerencie todos os casos periciais do sistema
-          </p>
-        </div>
-        <Button asChild>
-          <Link href="/cases/new">
-            <Plus className="mr-2 h-4 w-4" /> Novo Caso
-          </Link>
-        </Button>
-      </div>
-
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Filtros</CardTitle>
-          <CardDescription>
-            Filtre a lista de casos por número, status ou data
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Input placeholder="Número do caso" />
-            <Select>
-              <SelectTrigger>
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="em andamento">Em Andamento</SelectItem>
-                <SelectItem value="pendente">Pendente</SelectItem>
-                <SelectItem value="concluído">Concluído</SelectItem>
-                <SelectItem value="arquivado">Arquivado</SelectItem>
-              </SelectContent>
-            </Select>
-            <Input type="date" />
-            <div className="flex gap-2">
-              <Input type="date" />
-              <Button>Filtrar</Button>
+    <div className="min-h-screen bg-white flex">
+      {/* Sidebar */}
+      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
+              <Microscope className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-black">OdontoForense</h1>
+              <p className="text-xs text-gray-500 font-medium">Sistema Pericial</p>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      <Card>
-        <CardContent className="p-0">
-          {loading ? (
-            <div className="p-4 text-center">Carregando casos...</div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Número</TableHead>
-                  <TableHead>Descrição</TableHead>
-                  <TableHead>Data de Abertura</TableHead>
-                  <TableHead>Perito Responsável</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Local</TableHead>
-                  <TableHead>Solicitado por</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {cases?.map((caseItem) => (
-                  <TableRow key={caseItem._id}>
-                    <TableCell className="font-medium">{caseItem.numeroDoCaso}</TableCell>
-                    <TableCell>{caseItem.descricao}</TableCell>
-                    <TableCell>
-                      {new Date(caseItem.dataDeAbertura).toLocaleDateString("pt-BR")}
-                    </TableCell>
-                    <TableCell>{caseItem.peritoResponsavel}</TableCell>
-                    <TableCell>
-                      <StatusBadge status={caseItem.status} />
-                    </TableCell>
-                    <TableCell>{caseItem.local}</TableCell>
-                    <TableCell>{caseItem.solicitadoPor}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon" asChild>
-                          <Link href={`/cases/${caseItem._id}`}>
-                            <Eye className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                        <Button variant="ghost" size="icon" asChild>
-                          <Link href={`/reports/new?case=${caseItem._id}`}>
-                            <FileText className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+        <nav className="flex-1 p-4 space-y-2">
+          <div className="flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
+            <Home className="w-5 h-5" />
+            <span className="font-medium">Início</span>
+          </div>
+          <div className="flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
+            <FileText className="w-5 h-5" />
+            <span className="font-medium">Casos Periciais</span>
+          </div>
+          <div className="flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
+            <Search className="w-5 h-5" />
+            <span className="font-medium">Evidências</span>
+          </div>
+          <div className="flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
+            <Award className="w-5 h-5" />
+            <span className="font-medium">Laudos</span>
+          </div>
+          <div className="flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
+            <Database className="w-5 h-5" />
+            <span className="font-medium">Banco OdontoForense</span>
+          </div>
+          <div className="flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
+            <Users className="w-5 h-5" />
+            <span className="font-medium">Usuários</span>
+          </div>
+        </nav>
+
+        <div className="p-4 border-t border-gray-200">
+          <div className="flex items-center space-x-3 px-3 py-2 mb-2">
+            <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center text-white font-semibold text-sm">
+              CS
+            </div>
+            <div className="flex-1">
+              <p className="font-medium text-black text-sm">Carlos Silva</p>
+              <p className="text-xs text-gray-500">Perito</p>
+            </div>
+          </div>
+          <Separator className="my-2" />
+          <div className="flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer">
+            <LogOut className="w-4 h-4" />
+            <span className="text-sm font-medium">Sair</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-gray-50 to-white relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-20 left-20 w-32 h-32 border border-black rounded-full"></div>
+          <div className="absolute top-40 right-32 w-24 h-24 border border-black rounded-full"></div>
+          <div className="absolute bottom-32 left-40 w-16 h-16 border border-black rounded-full"></div>
+          <div className="absolute bottom-20 right-20 w-20 h-20 border border-black rounded-full"></div>
+        </div>
+
+        <div className="w-full max-w-md relative z-10">
+          {/* Header Section */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-black rounded-2xl mb-4">
+              <Shield className="w-8 h-8 text-white" />
+            </div>
+            <h1 className="text-3xl font-bold text-black mb-2">Bem-vindo de volta</h1>
+            <p className="text-gray-600">Acesse o sistema OdontoForense com suas credenciais</p>
+          </div>
+
+          {/* Login Card */}
+          <Card className="border-2 border-gray-100 shadow-xl">
+            <CardHeader className="space-y-1 pb-6">
+              <CardTitle className="text-2xl font-bold text-center text-black">Login</CardTitle>
+              <CardDescription className="text-center text-gray-600">
+                Entre com suas credenciais para acessar o sistema
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <form onSubmit={handleLogin} className="space-y-6">
+                {error && (
+                  <div className="bg-red-50 border border-red-200 text-red-800 p-3 rounded-md text-sm">{error}</div>
+                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-semibold text-black">
+                    Email
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="seu@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="h-12 border-2 border-gray-200 focus:border-black transition-colors"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password" className="text-sm font-semibold text-black">
+                      Senha
+                    </Label>
+                    <button
+                      type="button"
+                      className="text-sm text-gray-600 hover:text-black transition-colors font-medium"
+                    >
+                      Esqueceu a senha?
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Digite sua senha"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="h-12 border-2 border-gray-200 focus:border-black transition-colors pr-12"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-black transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                <Button
+                  className="w-full h-12 bg-black hover:bg-gray-800 text-white font-semibold text-base transition-all duration-200 transform hover:scale-[1.02]"
+                  type="submit"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Entrando..." : "Entrar no Sistema"}
+                </Button>
+              </form>
+
+              <div className="text-center pt-4">
+                <p className="text-xs text-gray-500">Sistema seguro e certificado para perícia odontológica</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Footer */}
+          <div className="text-center mt-8 text-xs text-gray-500">
+            <p>© 2024 OdontoForense - Sistema de Perícia Odontológica</p>
+            <p className="mt-1">Desenvolvido com segurança e precisão</p>
+          </div>
+        </div>
+      </div>
     </div>
-  )
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const statusMap = {
-    "em andamento": "Em Andamento",
-    "pendente": "Pendente",
-    "concluído": "Concluído",
-    "arquivado": "Arquivado",
-    "finalizado": "Concluído", 
-  }
-
-  const label = statusMap[status.toLowerCase()] || status
-
-  const statusStyles = {
-    "Em Andamento": "bg-blue-100 text-blue-800 hover:bg-blue-100/80",
-    "Pendente": "bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80",
-    "Concluído": "bg-green-100 text-green-800 hover:bg-green-100/80",
-    "Arquivado": "bg-gray-100 text-gray-800 hover:bg-gray-100/80",
-  }
-
-  return (
-    <Badge className={statusStyles[label] || ""} variant="outline">
-      {label}
-    </Badge>
   )
 }
