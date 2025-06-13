@@ -13,14 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -29,14 +21,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Plus, Search } from "lucide-react";
+import { Eye, Plus } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 
 interface ConteudoLaudo {
@@ -56,7 +42,6 @@ interface DentalRecord {
 }
 
 export default function DentalDatabasePage() {
-  const [activeTab, setActiveTab] = useState("search");
   const [records, setRecords] = useState<DentalRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -107,105 +92,87 @@ export default function DentalDatabasePage() {
         </Button>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-6">
-          <TabsTrigger value="search">Busca</TabsTrigger>
-          <TabsTrigger value="compare">Comparação</TabsTrigger>
-          <TabsTrigger value="records">Registros</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="search">
-          {/* ... mantemos a busca e resultados mockados por enquanto ... */}
-        </TabsContent>
-
-        <TabsContent value="compare">
-          {/* ... mantemos a seção de comparação como estática ... */}
-        </TabsContent>
-
-        <TabsContent value="records">
-          <Card>
-            <CardHeader>
-              <CardTitle>Registros Odontológicos</CardTitle>
-              <CardDescription>
-                {loading
-                  ? "Carregando registros..."
-                  : `${records.length} registro(s) encontrados`}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Data de Registro</TableHead>
-                    <TableHead>Características</TableHead>
-                    <TableHead>Dentição</TableHead>
-                    <TableHead>Região</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
+      <Card>
+        <CardHeader>
+          <CardTitle>Registros Odontológicos</CardTitle>
+          <CardDescription>
+            {loading
+              ? "Carregando registros..."
+              : `${records.length} registro(s) encontrados`}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Tipo</TableHead>
+                <TableHead>Data de Registro</TableHead>
+                <TableHead>Características</TableHead>
+                <TableHead>Dentição</TableHead>
+                <TableHead>Região</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-6">
+                    Carregando...
+                  </TableCell>
+                </TableRow>
+              ) : records.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-6">
+                    Nenhum registro encontrado.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                records.map((record) => (
+                  <TableRow key={record._id}>
+                    <TableCell className="font-medium">
+                      {record._id}
+                    </TableCell>
+                    <TableCell className="capitalize">
+                      {record.tipodoregistro.replace("-", " ")}
+                    </TableCell>
+                    <TableCell>
+                      {new Date(record.dataRegistro).toLocaleDateString("pt-BR")}
+                    </TableCell>
+                    <TableCell>{record.caracteristica}</TableCell>
+                    <TableCell>
+                      {record.conteudoLaudo?.tipoDenticao || "-"}
+                    </TableCell>
+                    <TableCell>
+                      {record.conteudoLaudo?.regiao?.join(", ") || "-"}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        className={
+                          record.status.toLowerCase() === "identificado"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-blue-100 text-blue-800"
+                        }
+                        variant="outline"
+                      >
+                        {record.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="icon" asChild>
+                        <Link href={`/dental-database/${record._id}`}>
+                          <Eye className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loading ? (
-                    <TableRow>
-                      <TableCell colSpan={8} className="text-center py-6">
-                        Carregando...
-                      </TableCell>
-                    </TableRow>
-                  ) : records.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={8} className="text-center py-6">
-                        Nenhum registro encontrado.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    records.map((record) => (
-                      <TableRow key={record._id}>
-                        <TableCell className="font-medium">
-                          {record._id}
-                        </TableCell>
-                        <TableCell className="capitalize">
-                          {record.tipodoregistro.replace("-", " ")}
-                        </TableCell>
-                        <TableCell>
-                          {new Date(record.dataRegistro).toLocaleDateString("pt-BR")}
-                        </TableCell>
-                        <TableCell>{record.caracteristica}</TableCell>
-                        <TableCell>
-                          {record.conteudoLaudo?.tipoDenticao || "-"}
-                        </TableCell>
-                        <TableCell>
-                          {record.conteudoLaudo?.regiao?.join(", ") || "-"}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            className={
-                              record.status.toLowerCase() === "identificado"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-blue-100 text-blue-800"
-                            }
-                            variant="outline"
-                          >
-                            {record.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="ghost" size="icon" asChild>
-                            <Link href={`/dental-database/${record._id}`}>
-                              <Eye className="h-4 w-4" />
-                            </Link>
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }
