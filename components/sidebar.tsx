@@ -63,7 +63,7 @@ export function Sidebar({ isMobile }: SidebarProps) {
                     className="justify-start"
                     asChild
                   >
-                    <Link href="/evidence/upload">
+                    <Link href="/evidence">
                       <Upload className="mr-2 h-4 w-4" />
                       Evidências
                     </Link>
