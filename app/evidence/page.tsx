@@ -25,12 +25,14 @@ import { toast } from "@/components/ui/use-toast";
 
 interface EvidenciaRecord {
   _id: string;
+  nome_evidencia: string;
+  categoria: string;
+  data_coleta: string;
   descricao: string;
-  tipo: string;
-  dataColeta: string;
-  localColeta: string;
-  status: string;
-  fileURL?: string;
+  local_retirada: string;
+  fileUrl?: string;
+  coletadoPor?: string;
+  caso?: string;
 }
 
 export default function EvidenciaDatabasePage() {
@@ -98,11 +100,11 @@ export default function EvidenciaDatabasePage() {
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
-                <TableHead>Descrição</TableHead>
-                <TableHead>Tipo</TableHead>
+                <TableHead>Nome</TableHead>
+                <TableHead>Categoria</TableHead>
                 <TableHead>Data de Coleta</TableHead>
+                <TableHead>Descrição</TableHead>
                 <TableHead>Local</TableHead>
-                <TableHead>Status</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
@@ -125,24 +127,13 @@ export default function EvidenciaDatabasePage() {
                     <TableCell className="font-medium">
                       {record._id}
                     </TableCell>
+                    <TableCell>{record.nome_evidencia}</TableCell>
+                    <TableCell>{record.categoria}</TableCell>
+                    <TableCell>
+                      {new Date(record.data_coleta).toLocaleDateString("pt-BR")}
+                    </TableCell>
                     <TableCell>{record.descricao}</TableCell>
-                    <TableCell>{record.tipo}</TableCell>
-                    <TableCell>
-                      {new Date(record.dataColeta).toLocaleDateString("pt-BR")}
-                    </TableCell>
-                    <TableCell>{record.localColeta}</TableCell>
-                    <TableCell>
-                      <Badge
-                        className={
-                          record.status.toLowerCase() === "ativo"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-gray-100 text-gray-800"
-                        }
-                        variant="outline"
-                      >
-                        {record.status}
-                      </Badge>
-                    </TableCell>
+                    <TableCell>{record.local_retirada}</TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="icon" asChild>
                         <Link href={`/evidencia/${record._id}`}>
