@@ -39,12 +39,20 @@ import { Badge } from "@/components/ui/badge";
 import { Eye, Plus, Search } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 
+interface ConteudoLaudo {
+  tipoDenticao: string;
+  caracteristicasEspecificas: string;
+  regiao: string[];
+}
+
 interface DentalRecord {
   _id: string;
-  tipoRegistro: "Ante-Mortem" | "Post-Mortem";
+  tipodoregistro: string;
   dataRegistro: string;
-  caracteristicas: string;
-  status: "Identificado" | "Não Identificado";
+  caracteristica: string;
+  status: string;
+  fileURL?: string;
+  conteudoLaudo: ConteudoLaudo;
 }
 
 export default function DentalDatabasePage() {
@@ -132,6 +140,8 @@ export default function DentalDatabasePage() {
                     <TableHead>Tipo</TableHead>
                     <TableHead>Data de Registro</TableHead>
                     <TableHead>Características</TableHead>
+                    <TableHead>Dentição</TableHead>
+                    <TableHead>Região</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
@@ -139,13 +149,13 @@ export default function DentalDatabasePage() {
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-6">
+                      <TableCell colSpan={8} className="text-center py-6">
                         Carregando...
                       </TableCell>
                     </TableRow>
                   ) : records.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-6">
+                      <TableCell colSpan={8} className="text-center py-6">
                         Nenhum registro encontrado.
                       </TableCell>
                     </TableRow>
@@ -155,15 +165,23 @@ export default function DentalDatabasePage() {
                         <TableCell className="font-medium">
                           {record._id}
                         </TableCell>
-                        <TableCell>{record.tipoRegistro}</TableCell>
+                        <TableCell className="capitalize">
+                          {record.tipodoregistro.replace("-", " ")}
+                        </TableCell>
                         <TableCell>
                           {new Date(record.dataRegistro).toLocaleDateString("pt-BR")}
                         </TableCell>
-                        <TableCell>{record.caracteristicas}</TableCell>
+                        <TableCell>{record.caracteristica}</TableCell>
+                        <TableCell>
+                          {record.conteudoLaudo?.tipoDenticao || "-"}
+                        </TableCell>
+                        <TableCell>
+                          {record.conteudoLaudo?.regiao?.join(", ") || "-"}
+                        </TableCell>
                         <TableCell>
                           <Badge
                             className={
-                              record.status === "Identificado"
+                              record.status.toLowerCase() === "identificado"
                                 ? "bg-green-100 text-green-800"
                                 : "bg-blue-100 text-blue-800"
                             }
