@@ -1,22 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import axios from "axios";
+import Link from "next/link";
+import { Eye } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -25,153 +21,127 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Download, Eye, Plus } from "lucide-react";
-import Link from "next/link";
 import { toast } from "@/components/ui/use-toast";
+import { Badge } from "@/components/ui/badge";
+
+interface Report {
+  id: string;
+  numero: string;
+  titulo: string;
+  data: string;
+  tipo: string;
+}
+
+function capitalize(text: string) {
+  return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+}
+
+function ReportTypeBadge({ type }: { type: string }) {
+  const variant = {
+    Final: "default",
+    Parcial: "secondary",
+    Rascunho: "outline",
+  }[type] || "outline";
+
+  return <Badge variant={variant}>{type}</Badge>;
+}
 
 export default function ReportsPage() {
-  const [reports, setReports] = useState<any[]>([]);
+  const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchReports = async () => {
-      try {
-        const response = await fetch("https://odontoforense-backend-2.onrender.com/api/laudo");
-        if (!response.ok) {
-          throw new Error("Erro ao buscar laudos.");
+  const fetchReports = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(
+        "https://odontoforense-backend-2.onrender.com/api/laudo",
+        {
+          headers: { Authorization: `Bearer ${token}` },
         }
-        const data = await response.json();
-        setReports(data); // supondo que o retorno seja um array de laudos
-      } catch (error) {
-        toast({
-          title: "Erro",
-          description: (error as Error).message,
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+      );
 
+      const mappedReports: Report[] = res.data.map((r: any) => ({
+        id: r._id,
+        numero: r.numeroLaudo,
+        titulo: r.tituloLaudo,
+        data: new Date(r.dataEmissao).toLocaleDateString("pt-BR"),
+        tipo: capitalize(r.tipoLaudo),
+      }));
+
+      setReports(mappedReports);
+    } catch (err: any) {
+      toast({
+        title: "Erro ao carregar laudos",
+        description:
+          err.response?.data?.error || "Erro inesperado ao buscar os laudos.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchReports();
   }, []);
 
-  console.log(reports)
   return (
-    <div className="container mx-auto py-10 px-4 sm:px-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Laudos Periciais</h1>
-          <p className="text-muted-foreground">
-            Gerencie todos os laudos periciais do sistema
-          </p>
-        </div>
-        <Button asChild>
-          <Link href="/reports/new">
-            <Plus className="mr-2 h-4 w-4" /> Relatório de evidências
-          </Link>
-        </Button>
-      </div>
-
-      <Card className="mb-8">
+    <div className="container mx-auto py-10">
+      <Card>
         <CardHeader>
-          <CardTitle>Filtros</CardTitle>
+          <CardTitle>Laudos Emitidos</CardTitle>
           <CardDescription>
-            Filtre a lista de laudos por número, tipo ou data
+            Visualize os laudos técnicos gerados no sistema.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <Input placeholder="Número do laudo" />
-            </div>
-            <div>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Tipo de Laudo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Preliminar">Preliminar</SelectItem>
-                  <SelectItem value="Final">Final</SelectItem>
-                  <SelectItem value="Complementar">Complementar</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Input type="date" />
-            </div>
-            <div className="flex gap-2">
-              <Input type="date" />
-              <Button>Filtrar</Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
         <CardContent className="p-0">
-          {loading ? (
-            <div className="p-6 text-center text-muted-foreground">Carregando laudos...</div>
-          ) : reports.length === 0 ? (
-            <div className="p-6 text-center text-muted-foreground">Nenhum laudo encontrado.</div>
-          ) : (
-            <Table>
-              <TableHeader>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Número</TableHead>
+                <TableHead>Título</TableHead>
+                <TableHead>Data</TableHead>
+                <TableHead>Tipo</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
                 <TableRow>
-                  <TableHead>Número</TableHead>
-                  <TableHead>Título</TableHead>
-                  <TableHead>Caso Relacionado</TableHead>
-                  <TableHead>Data</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Autor</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
+                  <TableCell colSpan={5} className="text-center py-6">
+                    Carregando laudos...
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {reports.map((report: any) => (
+              ) : reports.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-6">
+                    Nenhum laudo encontrado.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                reports.map((report) => (
                   <TableRow key={report.id}>
-                    <TableCell className="font-medium">{report.numero}</TableCell>
+                    <TableCell>{report.numero}</TableCell>
                     <TableCell>{report.titulo}</TableCell>
-                    <TableCell>{report.casoRelacionando}</TableCell>
                     <TableCell>{report.data}</TableCell>
                     <TableCell>
                       <ReportTypeBadge type={report.tipo} />
                     </TableCell>
-                    <TableCell>{report.autor}</TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon" asChild>
-                          <Link href={`/reports/${report.id}`}>
-                            <Eye className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                        <Button variant="ghost" size="icon">
-                          <Download className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <Button variant="ghost" size="icon" asChild>
+                        <Link href={`/reports/${report.id}`}>
+                          <Eye className="h-4 w-4" />
+                        </Link>
+                      </Button>
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+                ))
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>
-  );
-}
-
-function ReportTypeBadge({ type }: { type: string }) {
-  const typeStyles: Record<string, string> = {
-    Preliminar: "bg-blue-100 text-blue-800 hover:bg-blue-100/80",
-    Final: "bg-green-100 text-green-800 hover:bg-green-100/80",
-    Complementar: "bg-purple-100 text-purple-800 hover:bg-purple-100/80",
-  };
-
-  return (
-    <Badge className={typeStyles[type] || ""} variant="outline">
-      {type}
-    </Badge>
   );
 }
